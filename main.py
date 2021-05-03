@@ -80,7 +80,10 @@ def show_master():
                 (entry_list[0], entry_list[1], entry_list[2], entry_list[3], entry_list[4], entry_list[5]))
 
             ### THIS IS TEMP FOR TESTING
-            cur.execute("""SELECT * FROM drug WHERE drug_id = '00001111'""")
+            cur.execute("""
+                SELECT * FROM drug WHERE drug_id = '00001111'
+                """
+                        )
 
             print(cur.fetchall())
             conn.close()
@@ -108,7 +111,7 @@ def show_master():
         ent_qtyInStock.pack()
 
         # Executes when user clicks 'submit' button
-        def check_qtyInStock():
+        def submit_qtyInStock():
             # Connect ot database, use your credentials
             conn = psycopg2.connect(dbname="pharmacy", user="", password="")
             cur = conn.cursor()
@@ -122,9 +125,157 @@ def show_master():
             conn.close()
 
         # Button for checking the quantity of stock
-        btn_submit_qtyInStock = tk.Button(master=win_qtyInStock, text="submit", anchor="w", command=check_qtyInStock,
+        btn_submit_qtyInStock = tk.Button(master=win_qtyInStock, text="submit", anchor="w", command=submit_qtyInStock,
                                           bg='green', font='Ubuntu')
         btn_submit_qtyInStock.pack()
+
+    def show_pharmacyOrder():
+        win_pharmacyOrder = tk.Toplevel(win_master)
+        win_pharmacyOrder.geometry("500x100")
+        win_pharmacyOrder.title("Pharmacy Invoice Details")
+
+        # User Login Form
+        lbl_pharmacyOrder = tk.Label(master=win_pharmacyOrder, text="Pharmacy Name", anchor="w")
+        lbl_pharmacyOrder.pack()
+
+        # Entries
+        ent_pharmacyOrder = tk.Entry(master=win_pharmacyOrder, width=50)
+        ent_pharmacyOrder.pack()
+
+        # Executes when user clicks 'submit' button
+        def submit_pharmacyOrder():
+            # Connect ot database, use your credentials
+            conn = psycopg2.connect(dbname="pharmacy", user="", password="")
+            cur = conn.cursor()
+
+            # execute query
+            cur.execute(
+                'SELECT * FROM invoice, invoice_line WHERE pharmacy_id = %s AND invoice.invoice_id = invoice_line.invoice_id',
+                (ent_pharmacyOrder.get()))
+
+            print(cur.fetchall())
+            conn.close()
+
+        # Button for checking the quantity of stock
+        btn_submit_pharmacyOrder = tk.Button(master=win_pharmacyOrder, text="submit", anchor="w",
+                                             command=submit_pharmacyOrder, bg='green', font='Ubuntu')
+        btn_submit_pharmacyOrder.pack()
+
+    # Executes when user clicks 'submit' button
+    def submit_drugList_Exp():
+        # Connect ot database, use your credentials
+        conn = psycopg2.connect(dbname="pharmacy", user="", password="")
+        cur = conn.cursor()
+
+        # execute query
+        cur.execute(
+            'SELECT expiration_date, drug_name FROM stored_drug, drug WHERE stored_drug.drug_id = drug.drug_id ORDER BY  expiration_date ASC'
+        )
+
+        print(cur.fetchall())
+        conn.close()
+
+    def show_update_DrugPrice():
+        win_update_DrugPrice = tk.Toplevel(win_master)
+        win_update_DrugPrice.geometry("500x200")
+        win_update_DrugPrice.title("Updating Drug Price")
+
+        # User Login Form
+        lbl_update_DrugPrice = tk.Label(master=win_update_DrugPrice, text="Update Amount (ex: 0.05)", anchor="w")
+        lbl_update_DrugPrice.pack()
+
+        # Entries
+        ent_update_DrugPrice = tk.Entry(master=win_update_DrugPrice, width=50)
+        ent_update_DrugPrice.pack()
+
+        # User Login Form
+        lbl2_update_DrugPrice = tk.Label(master=win_update_DrugPrice, text="Drug ID to update", anchor="w")
+        lbl2_update_DrugPrice.pack()
+
+        # Entries
+        ent2_update_DrugPrice = tk.Entry(master=win_update_DrugPrice, width=50)
+        ent2_update_DrugPrice.pack()
+
+        # Executes when user clicks 'submit' button
+        def submit_update_DrugPrice():
+            # Connect ot database, use your credentials
+            conn = psycopg2.connect(dbname="pharmacy", user="", password="")
+            cur = conn.cursor()
+
+            # execute query
+            cur.execute(
+                'UPDATE invoice_line SET drug_price = drug_price * %d WHERE drug_id = %s',
+                (ent_update_DrugPrice.get(), ent2_update_DrugPrice.get()))
+
+            print(cur.fetchall())
+            conn.close()
+
+        # Button for checking the quantity of stock
+        btn_submit_update_DrugPrice = tk.Button(master=win_update_DrugPrice, text="submit", anchor="w",
+                                                command=submit_update_DrugPrice, bg='green', font='Ubuntu')
+        btn_submit_update_DrugPrice.pack()
+
+    def show_manufacturer_ofDrug():
+        win_manufacturer_ofDrug = tk.Toplevel(win_master)
+        win_manufacturer_ofDrug.geometry("500x100")
+        win_manufacturer_ofDrug.title("Manufacturer of Drug")
+
+        # User Login Form
+        lbl_manufacturer_ofDrug = tk.Label(master=win_manufacturer_ofDrug, text="Drug Name", anchor="w")
+        lbl_manufacturer_ofDrug.pack()
+
+        # Entries
+        ent_manufacturer_ofDrug = tk.Entry(master=win_manufacturer_ofDrug, width=50)
+        ent_manufacturer_ofDrug.pack()
+
+        # Executes when user clicks 'submit' button
+        def submit_manufacturer_ofDrug():
+            # Connect ot database, use your credentials
+            conn = psycopg2.connect(dbname="pharmacy", user="", password="")
+            cur = conn.cursor()
+
+            # execute query
+            cur.execute(
+                'SELECT * FROM drug WHERE drug_name LIKE ‘%Ibuprofen%’',
+                (ent_manufacturer_ofDrug.get()))
+
+            print(cur.fetchall())
+            conn.close()
+
+        # Button for checking the quantity of stock
+        btn_submit_manufacturer_ofDrug = tk.Button(master=win_manufacturer_ofDrug, text="submit", anchor="w",
+                                                   command=submit_manufacturer_ofDrug, bg='green', font='Ubuntu')
+        btn_submit_manufacturer_ofDrug.pack()
+
+    def submit_outstanding_Balances():
+        # Connect ot database, use your credentials
+        conn = psycopg2.connect(dbname="pharmacy", user="", password="")
+        cur = conn.cursor()
+
+        # execute query
+        cur.execute(
+            'SELECT * FROM invoice, invoice_line \
+            WHERE  ((invoice_line.drug_price + invoice.markup - invoice.discount) * invoice_line.drug_quantity) - invoice.amount_paid > 0 \
+            AND invoice_line.invoice_id = invoice.invoice_id'
+        )
+        print(cur.fetchall())
+        conn.close()
+
+    def submit_total_Oustanding():
+        # Connect ot database, use your credentials
+        conn = psycopg2.connect(dbname="pharmacy", user="", password="")
+        cur = conn.cursor()
+
+        # execute query
+        cur.execute(
+            'SELECT pharmacy.pharmacy_id, SUM((invoice_line.drug_price + invoice.markup - invoice.discount) * invoice_line.drug_quantity - invoice.amount_paid) \
+            AS remaining_balance FROM invoice, invoice_line, pharmacy WHERE invoice_line.invoice_id = invoice.invoice_id \
+            AND pharmacy.pharmacy_id = invoice.pharmacy_id \
+            GROUP BY pharmacy.pharmacy_id \
+            ORDER BY remaining_balance DESC'
+        )
+        print(cur.fetchall())
+        conn.close()
 
     # Button for opening the insert drugs window
     btn_master_a = tk.Button(master=win_master, text="Insert Drugs", anchor="w", command=show_insert_drug, bg='green',
@@ -135,6 +286,31 @@ def show_master():
     btn_qtyInStock = tk.Button(master=win_master, text="Quantity in Stock", anchor="w", command=show_qtyInStock,
                                bg='green', font='Ubuntu')
     btn_qtyInStock.pack()
+
+    # Button for checking the quantity of stock
+    btn_pharmacyOrder = tk.Button(master=win_master, text="Pharmacy Invoice Detail", anchor="w",
+                                  command=show_pharmacyOrder, bg='green', font='Ubuntu')
+    btn_pharmacyOrder.pack()
+
+    # Button for checking the quantity of stock
+    btn_submit_drugList_Exp = tk.Button(master=win_master, text="Drugs in Stock & exp_date", anchor="w",
+                                        command=submit_drugList_Exp, bg='green', font='Ubuntu')
+    btn_submit_drugList_Exp.pack()
+
+    # Button for checking the quantity of stock
+    btn_update_DrugPrice = tk.Button(master=win_master, text="Update Drug Price", anchor="w",
+                                     command=show_update_DrugPrice, bg='green', font='Ubuntu')
+    btn_update_DrugPrice.pack()
+
+    # Button for checking the quantity of stock
+    btn_manufacturer_ofDrug = tk.Button(master=win_master, text="Manufacture of Drug", anchor="w",
+                                        command=show_manufacturer_ofDrug, bg='green', font='Ubuntu')
+    btn_manufacturer_ofDrug.pack()
+
+    # Button for checking the quantity of stock
+    btn_submit_total_Oustanding = tk.Button(master=win_master, text="Total Outstanding Balances", anchor="w",
+                                            command=submit_total_Oustanding, bg='green', font='Ubuntu')
+    btn_submit_total_Oustanding.pack()
 
 
 # setting up the login window ----------------------------------------
